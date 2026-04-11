@@ -81,10 +81,23 @@ public class SuecaGame extends JFrame implements MenuPanel.MenuListener, GamePan
         if (!fullscreen) {
             dispose();
             setUndecorated(true);
-            setExtendedState(JFrame.MAXIMIZED_BOTH);
+            GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+            Rectangle bounds = ge.getMaximumWindowBounds();
+            GraphicsDevice gd = ge.getDefaultScreenDevice();
+            if (gd.isFullScreenSupported()) {
+                gd.setFullScreenWindow(this);
+            } else {
+                setExtendedState(JFrame.MAXIMIZED_BOTH);
+                setBounds(bounds);
+            }
             setVisible(true);
             fullscreen = true;
         } else {
+            GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+            GraphicsDevice gd = ge.getDefaultScreenDevice();
+            if (gd.getFullScreenWindow() == this) {
+                gd.setFullScreenWindow(null);
+            }
             dispose();
             setUndecorated(false);
             setExtendedState(JFrame.NORMAL);

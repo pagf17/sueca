@@ -11,16 +11,39 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 echo "Instalador da Sueca"
 echo "==================="
 
-# Verificar Java
+# ─── Verificar / Instalar Java ───
+install_java() {
+    echo "A tentar instalar o Java automaticamente..."
+    if command -v apt &> /dev/null; then
+        sudo apt update && sudo apt install -y default-jre
+    elif command -v dnf &> /dev/null; then
+        sudo dnf install -y java-21-openjdk
+    elif command -v pacman &> /dev/null; then
+        sudo pacman -S --noconfirm jre-openjdk
+    elif command -v zypper &> /dev/null; then
+        sudo zypper install -y java-21-openjdk
+    else
+        echo ""
+        echo "ERRO: Nao foi possivel instalar o Java automaticamente."
+        echo "Instala manualmente com um destes comandos:"
+        echo "  Ubuntu/Debian:  sudo apt install default-jre"
+        echo "  Fedora:         sudo dnf install java-21-openjdk"
+        echo "  Arch Linux:     sudo pacman -S jre-openjdk"
+        echo "  openSUSE:       sudo zypper install java-21-openjdk"
+        exit 1
+    fi
+}
+
 if ! command -v java &> /dev/null; then
-    echo ""
-    echo "ERRO: Java nao encontrado!"
-    echo ""
-    echo "Instala o Java com um destes comandos:"
-    echo "  Ubuntu/Debian:  sudo apt install default-jre"
-    echo "  Fedora:         sudo dnf install java-latest-openjdk"
-    echo "  Arch Linux:     sudo pacman -S jre-openjdk"
-    exit 1
+    echo "Java nao encontrado."
+    install_java
+fi
+
+# Verificar versao minima (Java 21)
+JAVA_VER=$(java -version 2>&1 | head -1 | sed 's/.*version "\([0-9]*\).*/\1/')
+if [ "$JAVA_VER" -lt 21 ] 2>/dev/null; then
+    echo "Java $JAVA_VER encontrado, mas e necessario Java 21 ou superior."
+    install_java
 fi
 
 echo "Java encontrado: $(java -version 2>&1 | head -1)"
