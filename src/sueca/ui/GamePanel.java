@@ -60,6 +60,25 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private Rectangle[] resultButtons = new Rectangle[2];
     private int resultHoverIndex = -1;
 
+    // Rendering caches — avoid recreating heavy objects every repaint
+    private static final Font FONT_WATERMARK   = new Font("SansSerif", Font.PLAIN, 120);
+    private static final Font FONT_TRUMP_SUIT  = new Font("SansSerif", Font.PLAIN, 28);
+    private static final Font FONT_SCOREBOARD_DOTS = new Font("SansSerif", Font.BOLD, 11);
+    private static final Color SHADOW_50 = new Color(0, 0, 0, 50);
+    private static final Color WATERMARK_COLOR = new Color(0, 0, 0, 15);
+    private static final Color SEPARATOR_COLOR = new Color(180, 180, 180);
+    private static final Color DOT_EMPTY_COLOR = new Color(180, 180, 180);
+    private static final Color DOT_RING_COLOR  = new Color(140, 140, 140);
+
+    private RadialGradientPaint cachedGradient;
+    private GameTheme cachedGradientTheme;
+    private int cachedGradW = -1, cachedGradH = -1;
+
+    private Path2D cachedOctagon, cachedInnerOctagon;
+    private Color cachedInnerFelt;
+    private GameTheme cachedTableTheme;
+    private int cachedTableW = -1, cachedTableH = -1;
+
     public GamePanel(GameEngine engine, GameTheme theme, Difficulty difficulty, PauseListener pauseListener) {
         this.engine = engine;
         this.theme = theme;
@@ -83,6 +102,10 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
     public void setTheme(GameTheme theme) {
         this.theme = theme;
+        // Invalidate theme-dependent caches
+        cachedGradientTheme = null;
+        cachedTableTheme = null;
+        CardRenderer.invalidateCardBackCache();
         repaint();
     }
 
@@ -213,23 +236,32 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     }
 
     private void drawBackground(Graphics2D g2, int w, int h) {
-        // Radial gradient felt
-        Point2D center = new Point2D.Float(w / 2f, h / 2f);
-        float radius = Math.max(w, h) * 0.7f;
-        Color[] colors = {theme.getFeltColor(), theme.getFeltDarker()};
-        float[] dist = {0f, 1f};
-        RadialGradientPaint felt = new RadialGradientPaint(center, radius, dist, colors);
-        g2.setPaint(felt);
+        // Rebuild gradient only when size or theme changes
+        if (cachedGradient == null || w != cachedGradW || h != cachedGradH || theme != cachedGradientTheme) {
+            Point2D center = new Point2D.Float(w / 2f, h / 2f);
+            float radius = Math.max(w, h) * 0.7f;
+            Color[] colors = {theme.getFeltColor(), theme.getFeltDarker()};
+            float[] dist = {0f, 1f};
+            cachedGradient = new RadialGradientPaint(center, radius, dist, colors);
+            cachedGradW = w;
+            cachedGradH = h;
+            cachedGradientTheme = theme;
+        }
+        g2.setPaint(cachedGradient);
         g2.fillRect(0, 0, w, h);
 
         // Subtle suit watermarks in corners
-        g2.setFont(new Font("SansSerif", Font.PLAIN, 120));
-        g2.setColor(new Color(0, 0, 0, 15));
+        g2.setFont(FONT_WATERMARK);
+        g2.setColor(WATERMARK_COLOR);
         g2.drawString("♣", 20, 130);
         g2.drawString("♠", w - 130, 130);
         g2.drawString("♦", 20, h - 20);
         g2.drawString("♥", w - 130, h - 20);
     }
+
+    private static final BasicStroke STROKE_TABLE_BORDER = new BasicStroke(5f);
+    private static final BasicStroke STROKE_TABLE_INNER  = new BasicStroke(2f);
+    private static final Color TABLE_INNER_SHADOW = new Color(0, 0, 0, 30);
 
     private void drawTable(Graphics2D g2, int w, int h) {
         int tableW = 420;
@@ -237,28 +269,34 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         int cx = w / 2;
         int cy = h / 2 - 30;
 
-        // Octagon path
-        Path2D octagon = createOctagon(cx, cy, tableW, tableH);
+        // Rebuild octagon paths only when size or theme changes
+        if (cachedOctagon == null || w != cachedTableW || h != cachedTableH || theme != cachedTableTheme) {
+            cachedOctagon = createOctagon(cx, cy, tableW, tableH);
+            cachedInnerOctagon = createOctagon(cx, cy, tableW - 20, tableH - 16);
+            Color felt = theme.getFeltColor();
+            cachedInnerFelt = new Color(
+                    Math.min(255, felt.getRed() + 10),
+                    Math.min(255, felt.getGreen() + 15),
+                    Math.min(255, felt.getBlue() + 10)
+            );
+            cachedTableW = w;
+            cachedTableH = h;
+            cachedTableTheme = theme;
+        }
 
         // Border
         g2.setColor(theme.getTableBorderColor());
-        g2.setStroke(new BasicStroke(5f));
-        g2.draw(octagon);
+        g2.setStroke(STROKE_TABLE_BORDER);
+        g2.draw(cachedOctagon);
 
-        // Fill with slightly different green
-        Color innerFelt = new Color(
-                Math.min(255, theme.getFeltColor().getRed() + 10),
-                Math.min(255, theme.getFeltColor().getGreen() + 15),
-                Math.min(255, theme.getFeltColor().getBlue() + 10)
-        );
-        g2.setColor(innerFelt);
-        g2.fill(octagon);
+        // Fill
+        g2.setColor(cachedInnerFelt);
+        g2.fill(cachedOctagon);
 
         // Inner shadow
-        g2.setColor(new Color(0, 0, 0, 30));
-        g2.setStroke(new BasicStroke(2f));
-        Path2D inner = createOctagon(cx, cy, tableW - 20, tableH - 16);
-        g2.draw(inner);
+        g2.setColor(TABLE_INNER_SHADOW);
+        g2.setStroke(STROKE_TABLE_INNER);
+        g2.draw(cachedInnerOctagon);
     }
 
     private Path2D createOctagon(int cx, int cy, int w, int h) {
@@ -304,23 +342,19 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         g2.drawString(pts != null ? pts[1] + " pts" : "0 pts", x + 90, y + 48);
 
         // Separator
-        g2.setColor(new Color(180, 180, 180));
+        g2.setColor(SEPARATOR_COLOR);
         g2.drawLine(x + 10, y + 58, x + w - 10, y + 58);
 
         // Games won dots
-        g2.setFont(new Font("SansSerif", Font.BOLD, 11));
+        g2.setFont(FONT_SCOREBOARD_DOTS);
         g2.setColor(theme.getTextColor());
         g2.drawString("Jogos:", x + 12, y + 76);
 
         for (int i = 0; i < 4; i++) {
             int dotX = x + 80 + i * 16;
-            if (i < games[0]) {
-                g2.setColor(theme.getAccentColor());
-            } else {
-                g2.setColor(new Color(180, 180, 180));
-            }
+            g2.setColor(i < games[0] ? theme.getAccentColor() : DOT_EMPTY_COLOR);
             g2.fillOval(dotX, y + 67, 10, 10);
-            g2.setColor(new Color(140, 140, 140));
+            g2.setColor(DOT_RING_COLOR);
             g2.drawOval(dotX, y + 67, 10, 10);
         }
 
@@ -330,13 +364,9 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
         for (int i = 0; i < 4; i++) {
             int dotX = x + 80 + i * 16;
-            if (i < games[1]) {
-                g2.setColor(theme.getLabelTeamThem());
-            } else {
-                g2.setColor(new Color(180, 180, 180));
-            }
+            g2.setColor(i < games[1] ? theme.getLabelTeamThem() : DOT_EMPTY_COLOR);
             g2.fillOval(dotX, y + 87, 10, 10);
-            g2.setColor(new Color(140, 140, 140));
+            g2.setColor(DOT_RING_COLOR);
             g2.drawOval(dotX, y + 87, 10, 10);
         }
     }
@@ -358,7 +388,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
 
         Color suitColor = engine.getTrump().isRed() ? theme.getRedColor() : theme.getBlackColor();
         g2.setColor(suitColor);
-        g2.setFont(new Font("SansSerif", Font.PLAIN, 28));
+        g2.setFont(FONT_TRUMP_SUIT);
         g2.drawString(engine.getTrump().getSymbol(), px + 75, py + 34);
     }
 
@@ -389,7 +419,7 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
         Color bg = team == 0 ? theme.getLabelTeamUs() : theme.getLabelTeamThem();
         if (active) bg = bg.brighter();
 
-        g2.setColor(new Color(0, 0, 0, 50));
+        g2.setColor(SHADOW_50);
         g2.fill(new RoundRectangle2D.Double(x - tw / 2.0 - pad + 2, y - 10 + 2, tw + pad * 2, 26, 8, 8));
 
         g2.setColor(bg);

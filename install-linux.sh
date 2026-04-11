@@ -67,7 +67,11 @@ fi
 # Criar script de execucao
 sudo tee "$INSTALL_DIR/sueca" > /dev/null <<'EOF'
 #!/bin/bash
-java -jar /usr/local/share/sueca/Sueca.jar
+java \
+  -Xms32m -Xmx256m \
+  -XX:+UseG1GC \
+  -Dsun.java2d.opengl=true \
+  -jar /usr/local/share/sueca/Sueca.jar
 EOF
 sudo chmod +x "$INSTALL_DIR/sueca"
 

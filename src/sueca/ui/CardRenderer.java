@@ -1,95 +1,138 @@
 package sueca.ui;
 
 import sueca.model.Card;
-import sueca.model.Rank;
-import sueca.model.Suit;
 import sueca.ui.theme.GameTheme;
 
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.RoundRectangle2D;
+import java.awt.image.BufferedImage;
 
 public class CardRenderer {
 
     public static final int CARD_W = 70;
     public static final int CARD_H = 100;
 
+    // Cached fonts — created once, reused every repaint
+    private static final Font FONT_RANK_CENTER = new Font("SansSerif", Font.BOLD, 22);
+    private static final Font FONT_SUIT_CENTER = new Font("SansSerif", Font.PLAIN, 26);
+    private static final Font FONT_RANK_MINI   = new Font("SansSerif", Font.BOLD, 11);
+    private static final Font FONT_SUIT_MINI   = new Font("SansSerif", Font.PLAIN, 11);
+
+    // Cached strokes
+    private static final BasicStroke STROKE_BORDER       = new BasicStroke(1.2f);
+    private static final BasicStroke STROKE_BACK_OUTER   = new BasicStroke(2f);
+    private static final BasicStroke STROKE_BACK_INNER   = new BasicStroke(1f);
+    private static final BasicStroke STROKE_BACK_PATTERN = new BasicStroke(0.5f);
+
+    // Cached colors
+    private static final Color SHADOW_COLOR       = new Color(0, 0, 0, 60);
+    private static final Color INNER_BORDER_COLOR = new Color(255, 255, 255, 80);
+    private static final Color HIGHLIGHT_BG       = new Color(255, 255, 180);
+
+    // Card back image cache — the diamond-grid pattern is expensive; render once per theme
+    private static BufferedImage cachedCardBack = null;
+    private static GameTheme     cachedCardBackTheme = null;
+
+    /** Call this when the theme changes so the card back is re-rendered. */
+    public static void invalidateCardBackCache() {
+        cachedCardBack = null;
+        cachedCardBackTheme = null;
+    }
+
+    private static BufferedImage getCardBackImage(GameTheme theme) {
+        if (cachedCardBack == null || cachedCardBackTheme != theme) {
+            // +3 to accommodate the shadow offset
+            cachedCardBack = new BufferedImage(CARD_W + 3, CARD_H + 3, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D bg = cachedCardBack.createGraphics();
+            bg.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            renderCardBack(bg, 0, 0, theme);
+            bg.dispose();
+            cachedCardBackTheme = theme;
+        }
+        return cachedCardBack;
+    }
+
     public static void drawCard(Graphics2D g2, Card card, int x, int y, GameTheme theme, boolean highlighted) {
         // Shadow
-        g2.setColor(new Color(0, 0, 0, 60));
+        g2.setColor(SHADOW_COLOR);
         g2.fill(new RoundRectangle2D.Double(x + 3, y + 3, CARD_W, CARD_H, 10, 10));
 
         // Card body
-        if (highlighted) {
-            g2.setColor(new Color(255, 255, 180));
-        } else {
-            g2.setColor(theme.getCardBackground());
-        }
+        g2.setColor(highlighted ? HIGHLIGHT_BG : theme.getCardBackground());
         g2.fill(new RoundRectangle2D.Double(x, y, CARD_W, CARD_H, 10, 10));
 
         // Border
         g2.setColor(theme.getCardBorder());
-        g2.setStroke(new BasicStroke(1.2f));
+        g2.setStroke(STROKE_BORDER);
         g2.draw(new RoundRectangle2D.Double(x, y, CARD_W, CARD_H, 10, 10));
 
-        // Color based on suit
         Color textColor = card.getSuit().isRed() ? theme.getRedColor() : theme.getBlackColor();
         g2.setColor(textColor);
 
         String rankStr = card.getRank().getSymbol();
         String suitStr = card.getSuit().getSymbol();
 
-        // Center rank and suit
-        g2.setFont(new Font("SansSerif", Font.BOLD, 22));
+        // Center rank
+        g2.setFont(FONT_RANK_CENTER);
         FontMetrics fm = g2.getFontMetrics();
-        int rankW = fm.stringWidth(rankStr);
-        g2.drawString(rankStr, x + (CARD_W - rankW) / 2, y + 38);
+        g2.drawString(rankStr, x + (CARD_W - fm.stringWidth(rankStr)) / 2, y + 38);
 
-        g2.setFont(new Font("SansSerif", Font.PLAIN, 26));
+        // Center suit
+        g2.setFont(FONT_SUIT_CENTER);
         fm = g2.getFontMetrics();
-        int suitW = fm.stringWidth(suitStr);
-        g2.drawString(suitStr, x + (CARD_W - suitW) / 2, y + 68);
+        g2.drawString(suitStr, x + (CARD_W - fm.stringWidth(suitStr)) / 2, y + 68);
 
-        // Mini rank top-left
-        g2.setFont(new Font("SansSerif", Font.BOLD, 11));
+        // Mini top-left
+        g2.setFont(FONT_RANK_MINI);
         g2.drawString(rankStr, x + 5, y + 14);
-
-        // Mini suit below rank
-        g2.setFont(new Font("SansSerif", Font.PLAIN, 11));
+        g2.setFont(FONT_SUIT_MINI);
         g2.drawString(suitStr, x + 5, y + 26);
 
-        // Mini rank bottom-right (rotated)
-        Graphics2D g2r = (Graphics2D) g2.create();
-        g2r.rotate(Math.PI, x + CARD_W / 2.0, y + CARD_H / 2.0);
-        g2r.setColor(textColor);
-        g2r.setFont(new Font("SansSerif", Font.BOLD, 11));
-        g2r.drawString(rankStr, x + 5, y + 14);
-        g2r.setFont(new Font("SansSerif", Font.PLAIN, 11));
-        g2r.drawString(suitStr, x + 5, y + 26);
-        g2r.dispose();
+        // Mini bottom-right (rotated 180°) — save/restore transform instead of g2.create()
+        AffineTransform saved = g2.getTransform();
+        g2.rotate(Math.PI, x + CARD_W / 2.0, y + CARD_H / 2.0);
+        g2.setFont(FONT_RANK_MINI);
+        g2.drawString(rankStr, x + 5, y + 14);
+        g2.setFont(FONT_SUIT_MINI);
+        g2.drawString(suitStr, x + 5, y + 26);
+        g2.setTransform(saved);
     }
 
     public static void drawCardBack(Graphics2D g2, int x, int y, GameTheme theme) {
+        g2.drawImage(getCardBackImage(theme), x, y, null);
+    }
+
+    public static void drawCardBackRotated(Graphics2D g2, int x, int y, double angle, GameTheme theme) {
+        Graphics2D g2r = (Graphics2D) g2.create();
+        g2r.rotate(angle, x + CARD_W / 2.0, y + CARD_H / 2.0);
+        g2r.drawImage(getCardBackImage(theme), x, y, null);
+        g2r.dispose();
+    }
+
+    /** Actual rendering of the card back — called once per theme to populate the cache. */
+    private static void renderCardBack(Graphics2D g2, int x, int y, GameTheme theme) {
         // Shadow
-        g2.setColor(new Color(0, 0, 0, 60));
+        g2.setColor(SHADOW_COLOR);
         g2.fill(new RoundRectangle2D.Double(x + 3, y + 3, CARD_W, CARD_H, 10, 10));
 
-        // Card back
+        // Card back fill
         g2.setColor(theme.getCardBackPrimary());
         g2.fill(new RoundRectangle2D.Double(x, y, CARD_W, CARD_H, 10, 10));
 
-        // Border
+        // Outer border
         g2.setColor(Color.WHITE);
-        g2.setStroke(new BasicStroke(2f));
+        g2.setStroke(STROKE_BACK_OUTER);
         g2.draw(new RoundRectangle2D.Double(x, y, CARD_W, CARD_H, 10, 10));
 
         // Inner border
-        g2.setColor(new Color(255, 255, 255, 80));
-        g2.setStroke(new BasicStroke(1f));
+        g2.setColor(INNER_BORDER_COLOR);
+        g2.setStroke(STROKE_BACK_INNER);
         g2.draw(new RoundRectangle2D.Double(x + 5, y + 5, CARD_W - 10, CARD_H - 10, 6, 6));
 
-        // Pattern - simple diamond grid
+        // Diamond grid pattern
         g2.setColor(theme.getCardBackSecondary());
-        g2.setStroke(new BasicStroke(0.5f));
+        g2.setStroke(STROKE_BACK_PATTERN);
         for (int i = 0; i < CARD_W; i += 8) {
             for (int j = 0; j < CARD_H; j += 8) {
                 int cx = x + 8 + i;
@@ -100,12 +143,5 @@ public class CardRenderer {
                 }
             }
         }
-    }
-
-    public static void drawCardBackRotated(Graphics2D g2, int x, int y, double angle, GameTheme theme) {
-        Graphics2D g2r = (Graphics2D) g2.create();
-        g2r.rotate(angle, x + CARD_W / 2.0, y + CARD_H / 2.0);
-        drawCardBack(g2r, x, y, theme);
-        g2r.dispose();
     }
 }
