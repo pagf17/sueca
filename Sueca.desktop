@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Sueca
+Comment=Jogo de Sueca
+Exec=bash -c "cd %k/../.. && java -jar dist/Sueca.jar"
+Path=/usr/local/share/sueca
+Type=Application
+Categories=Game;CardGame;
+Terminal=false
+Icon=/usr/local/share/sueca/Sueca.png

@@ -1,0 +1,22 @@
+<launch4jConfig>
+  <dontWrapJar>false</dontWrapJar>
+  <headerType>gui</headerType>
+  <jar>dist\Sueca.jar</jar>
+  <outfile>dist\Sueca.exe</outfile>
+  <errTitle>Sueca</errTitle>
+  <icon>src\sueca\resources\logo.ico</icon>
+  <jre>
+    <minVersion>11</minVersion>
+  </jre>
+  <versionInfo>
+    <fileVersion>1.0.0.0</fileVersion>
+    <txtFileVersion>1.0.0</txtFileVersion>
+    <fileDescription>Jogo de Sueca</fileDescription>
+    <copyright>2024</copyright>
+    <productVersion>1.0.0.0</productVersion>
+    <txtProductVersion>1.0.0</txtProductVersion>
+    <productName>Sueca</productName>
+    <internalName>Sueca</internalName>
+    <originalFilename>Sueca.exe</originalFilename>
+  </versionInfo>
+</launch4jConfig>

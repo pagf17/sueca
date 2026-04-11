@@ -1,0 +1,18 @@
+package sueca.model;
+
+public enum Difficulty {
+    FACIL("Fácil"),
+    MEDIA("Média"),
+    DIFICIL("Difícil");
+
+    private final String label;
+
+    Difficulty(String label) {
+        this.label = label;
+    }
+
+    public String getLabel() { return label; }
+
+    @Override
+    public String toString() { return label; }
+}
