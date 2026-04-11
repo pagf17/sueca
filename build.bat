@@ -48,7 +48,7 @@ mkdir dist
 
 REM Compilar
 dir /s /b src\*.java > sources.txt
-"%JAVAC%" -d build @sources.txt
+"%JAVAC%" --release 21 -d build @sources.txt
 
 if %ERRORLEVEL% neq 0 (
     echo.

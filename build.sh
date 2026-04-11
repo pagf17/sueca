@@ -10,7 +10,7 @@ mkdir -p build dist
 
 # Compilar
 find src -name "*.java" > sources.txt
-javac -d build @sources.txt
+javac --release 21 -d build @sources.txt
 
 if [ $? -ne 0 ]; then
     echo "❌ Erro na compilação!"
