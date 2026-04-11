@@ -61,8 +61,8 @@ public class GamePanel extends JPanel implements MouseListener, MouseMotionListe
     private int resultHoverIndex = -1;
 
     // Rendering caches — avoid recreating heavy objects every repaint
-    private static final Font FONT_WATERMARK   = new Font("SansSerif", Font.PLAIN, 120);
-    private static final Font FONT_TRUMP_SUIT  = new Font("SansSerif", Font.PLAIN, 28);
+    private static final Font FONT_WATERMARK   = new Font(CardRenderer.SUIT_FONT_NAME, Font.PLAIN, 120);
+    private static final Font FONT_TRUMP_SUIT  = new Font(CardRenderer.SUIT_FONT_NAME, Font.PLAIN, 28);
     private static final Font FONT_SCOREBOARD_DOTS = new Font("SansSerif", Font.BOLD, 11);
     private static final Color SHADOW_50 = new Color(0, 0, 0, 50);
     private static final Color WATERMARK_COLOR = new Color(0, 0, 0, 15);

@@ -13,11 +13,29 @@ public class CardRenderer {
     public static final int CARD_W = 70;
     public static final int CARD_H = 100;
 
+    /**
+     * Finds a font family that can render suit symbols (♥ ♦ ♣ ♠).
+     * On Linux the default "SansSerif" logical font often lacks these glyphs;
+     * DejaVu Sans / Noto Sans are reliably present on most distributions.
+     */
+    public static final String SUIT_FONT_NAME = findSuitFontName();
+
+    private static String findSuitFontName() {
+        String[] candidates = {"DejaVu Sans", "Noto Sans", "Liberation Sans", "Dialog", "SansSerif"};
+        for (String name : candidates) {
+            Font f = new Font(name, Font.PLAIN, 12);
+            if (f.canDisplay('\u2660') && f.canDisplay('\u2665')) {
+                return name;
+            }
+        }
+        return "SansSerif";
+    }
+
     // Cached fonts — created once, reused every repaint
-    private static final Font FONT_RANK_CENTER = new Font("SansSerif", Font.BOLD, 22);
-    private static final Font FONT_SUIT_CENTER = new Font("SansSerif", Font.PLAIN, 26);
-    private static final Font FONT_RANK_MINI   = new Font("SansSerif", Font.BOLD, 11);
-    private static final Font FONT_SUIT_MINI   = new Font("SansSerif", Font.PLAIN, 11);
+    private static final Font FONT_RANK_CENTER = new Font("SansSerif",   Font.BOLD,  22);
+    private static final Font FONT_SUIT_CENTER = new Font(SUIT_FONT_NAME, Font.PLAIN, 26);
+    private static final Font FONT_RANK_MINI   = new Font("SansSerif",   Font.BOLD,  11);
+    private static final Font FONT_SUIT_MINI   = new Font(SUIT_FONT_NAME, Font.PLAIN, 11);
 
     // Cached strokes
     private static final BasicStroke STROKE_BORDER       = new BasicStroke(1.2f);
