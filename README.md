@@ -6,8 +6,6 @@
 
 Um jogo de Sueca para PC, feito em Java. Jogas sozinho contra 3 adversários controlados pelo computador, com três níveis de dificuldade e dois temas visuais diferentes.
 
-Comecei este projeto porque a versão da Sueca na Microsoft Store foi descontinuada em dezembro de 2024. Corre tanto em Windows como em Linux e não precisa de nada instalado além do Java.
-
 ## O que tem
 
 - Sueca a 4 jogadores (tu e mais 3 adversários controlados pelo computador)
