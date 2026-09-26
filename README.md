@@ -4,247 +4,87 @@
   <img src="src/sueca/resources/logo.png" alt="Sueca" width="128">
 </p>
 
-Jogo de cartas **Sueca** para desktop, feito em Java. Joga offline contra 3 adversários controlados pelo computador, com diferentes níveis de dificuldade e temas visuais.
+Um jogo de Sueca para PC, feito em Java. Jogas sozinho contra 3 adversários controlados pelo computador, com três níveis de dificuldade e dois temas visuais diferentes.
 
-Criado como alternativa à versão da Microsoft Store (descontinuada em 31/12/2024), pensado para funcionar tanto em **Windows** como em **Linux**.
+Comecei este projeto porque a versão da Sueca na Microsoft Store foi descontinuada em dezembro de 2024. Corre tanto em Windows como em Linux e não precisa de nada instalado além do Java.
 
----
+## O que tem
 
-## Funcionalidades
+- Sueca a 4 jogadores (tu e mais 3 adversários controlados pelo computador)
+- Três dificuldades: Fácil, Média e Difícil
+- Dois temas: Clássico (mesa verde) e Moderno (mesa escura)
+- Cartas que não podes jogar ficam semi-transparentes na tua mão
+- Trunfo sempre visível durante a ronda
+- Placar com pontos e jogos ganhos
+- Nomes dos adversários sorteados a cada partida
+- Ecrã inteiro e menu de pausa
 
-- Jogo completo de Sueca a 4 jogadores (tu + 3 adversários IA)
-- 3 níveis de dificuldade: **Fácil**, **Média** e **Difícil**
-- 2 temas visuais: **Clássico** (mesa verde tradicional) e **Moderno** (mesa escura)
-- Cartas jogáveis destacadas na tua mão (as não jogáveis ficam semi-transparentes)
-- Indicador de trunfo visível durante toda a ronda
-- Placar com pontos da ronda e jogos ganhos por equipa
-- Nomes dos adversários gerados aleatoriamente (nomes portugueses) em cada partida
-- Menu de pausa com opções de tema, ecrã inteiro e saída
-- Modo ecrã inteiro
-- Funciona em Windows e Linux sem dependências externas além do Java
-
----
-
-## Instalação e execução
+## Como instalar
 
 ### Windows
 
-#### Opção 1 — Executável (mais simples)
+A forma mais simples é ir à pasta `dist/` e abrir o `Sueca.exe`.
 
-1. Vai à pasta `dist/`
-2. Faz duplo clique em **`Sueca.exe`**
+Se preferires (ou se o `.exe` não existir), precisas do Java 21+ instalado ([adoptium.net](https://adoptium.net)) e depois corres:
 
-> O ficheiro `.exe` é criado automaticamente durante a compilação se o [Launch4j](https://launch4j.sourceforge.net/) estiver instalado. Caso contrário, usa a Opção 2.
+```
+java -jar dist\Sueca.jar
+```
 
-#### Opção 2 — Ficheiro JAR
-
-1. Certifica-te de que tens o **Java 21** ou superior instalado.
-   - Podes instalar a partir de: [https://adoptium.net](https://adoptium.net) (Adoptium Temurin)
-   - Depois de instalar, confirma no terminal:
-     ```
-     java -version
-     ```
-2. Faz duplo clique em **`dist/Sueca.jar`**
-   - Ou, no terminal:
-     ```
-     java -jar dist\Sueca.jar
-     ```
-
-#### Compilar a partir do código fonte (Windows)
-
-1. Instala o **JDK 21** ou superior ([Adoptium Temurin](https://adoptium.net))
-2. Abre o terminal na pasta do projeto
-3. Executa:
-   ```
-   build.bat
-   ```
-4. O ficheiro gerado fica em `dist/Sueca.jar` (e `dist/Sueca.exe` se tiveres o Launch4j instalado)
-5. No final, o script pergunta se queres jogar de imediato
-
----
+Para compilar tu mesmo a partir do código, corre `build.bat` na pasta do projeto. O jar (e o exe, se tiveres o [Launch4j](https://launch4j.sourceforge.net/)) fica em `dist/`.
 
 ### Linux
 
-#### Passo 1 — Instalar o Java
+Primeiro garante que tens o Java instalado:
 
-Se ainda não tiveres o Java instalado, usa o comando da tua distribuição:
-
-| Distribuição | Comando |
-|---|---|
-| Ubuntu / Debian | `sudo apt install default-jre` |
-| Fedora | `sudo dnf install java-21-openjdk` |
-| Arch Linux | `sudo pacman -S jre-openjdk` |
-| openSUSE | `sudo zypper install java-21-openjdk` |
-
-Confirma a instalação:
 ```bash
-java -version
+sudo apt install default-jre       # Ubuntu/Debian
+sudo dnf install java-21-openjdk   # Fedora
+sudo pacman -S jre-openjdk         # Arch
+sudo zypper install java-21-openjdk # openSUSE
 ```
 
-#### Passo 2 — Compilar o jogo
+Depois compila e corre:
 
 ```bash
 chmod +x build.sh
 ./build.sh
-```
-
-Isto cria o ficheiro `dist/Sueca.jar`.
-
-#### Passo 3 — Jogar
-
-```bash
 java -jar dist/Sueca.jar
 ```
 
-#### Instalação no sistema (opcional)
-
-Se preferires ter o jogo acessível pelo menu de aplicações:
+Se quiseres o jogo integrado no menu de aplicações (com um comando `sueca` no terminal), há um instalador:
 
 ```bash
 chmod +x install-linux.sh
 ./install-linux.sh
 ```
 
-Este script:
-- Instala o Java automaticamente se não estiver presente
-- Compila o jogo se necessário
-- Copia o jogo para `/usr/local/share/sueca/`
-- Cria um atalho no menu de aplicações
-- Cria o comando `sueca` no terminal
-
-Depois podes simplesmente:
-- Procurar **"Sueca"** no menu de aplicações, ou
-- Escrever `sueca` no terminal
-
----
-
 ## Como se joga
 
-### Disposição dos jogadores
+Tu ficas em baixo, o teu parceiro em cima, e os adversários nos lados. É "Nós" (tu + parceiro) contra "Eles". Ganha quem chegar primeiro a 4 jogos.
 
-- Tu estás sempre na posição de **baixo** (nome: "Tu")
-- O teu **parceiro de equipa** está na posição de cima (em frente a ti)
-- Os **adversários** estão à esquerda e à direita
-- Equipas: **Nós** (tu + parceiro) vs **Eles** (esquerda + direita)
+Cada ronda são 40 cartas distribuídas (10 por jogador) e 120 pontos ao todo, divididos por 10 vazas. Quem passar de 60 pontos ganha a ronda — e se fizeres 91+ (capote) ganhas 2 jogos de uma vez, ou 4 jogos se fizeres a limpeza total (bandeira, 120 pontos).
 
-### Objetivo
+A última carta distribuída define o trunfo, mostrado sempre no canto do ecrã. Regras de jogo normais: tens de assistir ao naipe pedido se tiveres carta desse naipe; senão, jogas o que quiseres, incluindo trunfo. Ganha a vaza a carta mais alta do naipe pedido, ou o trunfo mais alto se alguém cortou.
 
-Ganhar **4 jogos** antes da equipa adversária.
+**Valor das cartas:** Ás (11), 7 (10), Rei (4), Valete (3), Dama (2), as restantes (0).
 
-Cada ronda distribui 40 cartas (10 por jogador) e um total de **120 pontos** repartidos por 10 vazas. A equipa que fizer mais de 60 pontos ganha a ronda.
-
-### Trunfo
-
-A última carta distribuída define o **naipe de trunfo**. Este naipe é mostrado no canto superior direito do ecrã durante toda a ronda. Qualquer carta de trunfo ganha a qualquer carta de outro naipe.
-
-### Jogar uma vaza
-
-1. Clica numa carta da tua mão para a jogar.
-2. Tens de **assistir ao naipe** (jogar uma carta do mesmo naipe da primeira carta jogada), se tiveres.
-3. Se não tiveres cartas desse naipe, podes jogar qualquer carta, incluindo trunfo.
-4. Ganha a vaza quem jogou a carta mais alta do naipe pedido, ou o trunfo mais alto se alguém trunfou.
-5. Quem ganha a vaza abre a seguinte.
-
-### Valor das cartas
-
-| Carta | Pontos |
-|---|---|
-| Ás | 11 |
-| 7 | 10 |
-| Rei | 4 |
-| Valete | 3 |
-| Dama | 2 |
-| 2, 3, 4, 5, 6 | 0 |
-
-**Hierarquia dentro do naipe (do mais fraco para o mais forte):**
-
-2 → 3 → 4 → 5 → 6 → Valete → Dama → Rei → 7 → Ás
-
-### Resultado da ronda
-
-| Resultado | Jogos ganhos |
-|---|---|
-| Mais de 60 pontos | +1 jogo |
-| 91 ou mais pontos (**capote**) | +2 jogos |
-| 120 pontos (**bandeira**) | +4 jogos |
-| Empate a 60 | Ninguém marca |
-
-A primeira equipa a atingir **4 jogos** ganha a partida.
-
----
+**Força das cartas (do mais fraco ao mais forte):** 2, 3, 4, 5, 6, Valete, Dama, Rei, 7, Ás.
 
 ## Controlos
 
-| Ação | Como |
-|---|---|
-| Jogar uma carta | Clicar na carta |
-| Pausar / Menu | Tecla `Escape` |
-| Mudar tema | No menu de pausa |
-| Ecrã inteiro / Modo janela | No menu de pausa ou no menu principal |
+Clicas numa carta para a jogar. `Escape` abre o menu de pausa, onde também dá para mudar de tema e ativar o ecrã inteiro.
 
----
+## Dificuldades
 
-## Níveis de dificuldade
-
-- **Fácil** — O computador joga cartas aleatoriamente.
-- **Média** — O computador usa estratégia básica: tenta ganhar vazas, joga baixo quando o parceiro está a ganhar, e evita desperdiçar trunfos.
-- **Difícil** — O computador usa estratégia avançada: lembra-se das cartas já jogadas, calcula se as suas cartas são as mais altas que restam no naipe, trunfa em vazas valiosas, e maximiza pontos quando é o último a jogar.
-
----
-
-## Temas visuais
-
-- **Clássico** — Mesa verde tradicional, costas das cartas azuis, estilo semelhante ao jogo original.
-- **Moderno** — Mesa escura, costas das cartas roxas, interface com tons mais sóbrios.
-
-O tema pode ser escolhido no menu principal ou trocado a qualquer momento no menu de pausa.
-
----
-
-## Estrutura do projeto
-
-```
-sueca/
-├── src/sueca/
-│   ├── SuecaGame.java          — Ponto de entrada e janela principal
-│   ├── model/
-│   │   ├── Card.java           — Carta (naipe + valor)
-│   │   ├── Deck.java           — Baralho de 40 cartas
-│   │   ├── Difficulty.java     — Níveis de dificuldade
-│   │   ├── GameEngine.java     — Lógica do jogo e pontuação
-│   │   ├── Player.java         — Jogador (humano ou IA)
-│   │   ├── Rank.java           — Valores das cartas
-│   │   ├── Suit.java           — Naipes (Copas, Ouros, Paus, Espadas)
-│   │   └── Trick.java          — Vaza (4 cartas jogadas)
-│   ├── ai/
-│   │   └── AIPlayer.java       — Inteligência artificial dos adversários
-│   ├── ui/
-│   │   ├── CardRenderer.java   — Desenho das cartas
-│   │   ├── GamePanel.java      — Ecrã de jogo
-│   │   └── MenuPanel.java      — Menu principal
-│   └── ui/theme/
-│       ├── GameTheme.java      — Interface de tema
-│       ├── ClassicTheme.java   — Tema clássico
-│       └── ModernTheme.java    — Tema moderno
-├── build.bat                   — Script de compilação (Windows)
-├── build.sh                    — Script de compilação (Linux)
-├── install-linux.sh            — Instalador para Linux
-└── README.md
-```
-
----
+- **Fácil** — o computador joga à sorte.
+- **Média** — tenta ganhar vazas, evita gastar trunfos à toa e joga baixo quando o parceiro já está a ganhar.
+- **Difícil** — joga de forma mais calculada: sabe que cartas já saíram, avalia se a carta que tem na mão já é a mais forte do naipe, corta em vazas que valham a pena e tenta maximizar pontos quando joga por último.
 
 ## Requisitos
 
-**Para jogar:**
-- Java 21 ou superior (JRE)
-
-**Para compilar:**
-- Java 21 ou superior (JDK)
-- Launch4j (opcional, só para criar o `.exe` no Windows)
-
----
+Só precisas do Java 21 ou superior para jogar. Para compilar também precisas do JDK 21+ (e opcionalmente do Launch4j, se quiseres gerar o `.exe` no Windows).
 
 ## Licença
 
-Projeto pessoal, sem licença definida.
+MIT — o código está livre para usares como quiseres. Ver o ficheiro [LICENSE](LICENSE).
