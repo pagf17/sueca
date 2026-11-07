@@ -11,8 +11,6 @@ Um jogo de Sueca para PC, feito em Java. Jogas sozinho contra 3 adversários con
 - Sueca a 4 jogadores (tu e mais 3 adversários controlados pelo computador)
 - Três dificuldades: Fácil, Média e Difícil
 - Dois temas: Clássico (mesa verde) e Moderno (mesa escura)
-- Cartas que não podes jogar ficam semi-transparentes na tua mão
-- Trunfo sempre visível durante a ronda
 - Placar com pontos e jogos ganhos
 - Nomes dos adversários sorteados a cada partida
 - Ecrã inteiro e menu de pausa
